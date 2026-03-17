@@ -20,9 +20,9 @@ public class SchemeService {
     public Page<SchemeDTO> getFilteredSchemes(
             CategoryType category, String state, GenderType gender, CasteType caste,
             Boolean disability, Boolean bpl, Boolean widow, Boolean minority,
-            Pageable pageable) {
+            Double income, Pageable pageable) {
         
-        return schemeRepository.findFiltered(category, state, gender, caste, disability, bpl, widow, minority, pageable)
+        return schemeRepository.findFiltered(category, state, gender, caste, disability, bpl, widow, minority, income, pageable)
                 .map(this::convertToDTO);
     }
 

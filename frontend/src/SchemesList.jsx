@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import SchemeCard from "./SchemeCard";
 
 function SchemesList({ 
@@ -63,7 +64,8 @@ function SchemesList({
                 disabled={pagination.page === 0} 
                 onClick={() => onPageChange(pagination.page - 1)}
               >
-                Previous
+                <ChevronLeft size={18} />
+                {t.previous || "Previous"}
               </button>
               
               <div className="page-numbers">
@@ -83,7 +85,8 @@ function SchemesList({
                 disabled={pagination.page === pagination.totalPages - 1} 
                 onClick={() => onPageChange(pagination.page + 1)}
               >
-                Next
+                {t.next || "Next"}
+                <ChevronRight size={18} />
               </button>
             </div>
           )}

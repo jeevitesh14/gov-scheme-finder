@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ShieldCheck, UserPlus, Mail, Lock, User, AlertCircle, ArrowRight } from "lucide-react";
 import { authService } from "./api";
 
 function Register() {
@@ -26,64 +28,87 @@ function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="auth-card"
+      >
         <div className="auth-logo">
-          <h1>✔ Scheme Finder</h1>
-          <p>Create your account to get started.</p>
+          <ShieldCheck size={48} className="text-primary" style={{ margin: '0 auto 1.5rem' }} />
+          <h1>Join GovScheme</h1>
+          <p>Create your profile to discover eligible benefits.</p>
         </div>
 
-        <h2>Register</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 800 }}>Create Account</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && (
+          <div className="auth-error">
+            <AlertCircle size={16} />
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Full Name</label>
-            <input
-              id="register-name"
-              className="form-input"
-              name="name"
-              placeholder="Your full name"
-              value={user.name}
-              onChange={handleChange}
-              required
-            />
+            <label>Full Legal Name</label>
+            <div style={{ position: 'relative' }}>
+              <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                id="register-name"
+                className="form-input"
+                style={{ paddingLeft: '2.75rem' }}
+                name="name"
+                placeholder="John Doe"
+                value={user.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <div className="form-group">
-            <label>Email</label>
-            <input
-              id="register-email"
-              className="form-input"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={user.email}
-              onChange={handleChange}
-              required
-            />
+            <label>Email Address</label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                id="register-email"
+                className="form-input"
+                style={{ paddingLeft: '2.75rem' }}
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                value={user.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input
-              id="register-password"
-              className="form-input"
-              name="password"
-              type="password"
-              placeholder="Create a password"
-              value={user.password}
-              onChange={handleChange}
-              required
-            />
+            <div style={{ position: 'relative' }}>
+              <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                id="register-password"
+                className="form-input"
+                style={{ paddingLeft: '2.75rem' }}
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={user.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <button className="auth-submit" type="submit" disabled={loading}>
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading ? "Creating Profile..." : "Register Now"}
+            {!loading && <UserPlus size={18} style={{ marginLeft: '0.5rem', verticalAlign: 'middle', display: 'inline' }} />}
           </button>
         </form>
 
         <p className="auth-alt">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account? <Link to="/login">Sign in here</Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

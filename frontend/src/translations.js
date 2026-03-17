@@ -34,6 +34,8 @@ export const translations = {
     schemes: "schemes",
     noSchemesFound: "No schemes found",
     adjustFilters: "Try adjusting your filters or visit our chat to get personalized recommendations.",
+    previous: "Previous",
+    next: "Next",
   },
   Hindi: {
     dashboard: "डैशबोर्ड",
@@ -70,6 +72,8 @@ export const translations = {
     schemes: "योजनाएं सहेजी हैं",
     noSchemesFound: "कोई योजना नहीं मिली",
     adjustFilters: "अपने फ़िल्टर समायोजित करने का प्रयास करें या व्यक्तिगत अनुशंसाएं प्राप्त करने के लिए हमारे चैट पर जाएं।",
+    previous: "पिछला",
+    next: "अगला",
   },
   Telugu: {
     dashboard: "డ్యాష్‌బోర్డ్",
@@ -106,5 +110,7 @@ export const translations = {
     schemes: "పథకాలను సేవ్ చేసారు",
     noSchemesFound: "పథకాలు కనుగొనబడలేదు",
     adjustFilters: "మీ ఫిల్టర్‌లను సర్దుబాటు చేయడానికి ప్రయత్నించండి లేదా వ్యక్తిగతీకరించిన సిఫార్సులను పొందడానికి మా చాట్‌ని సందర్శించండి.",
+    previous: "మునుపటి",
+    next: "తదుపరి",
   }
 };

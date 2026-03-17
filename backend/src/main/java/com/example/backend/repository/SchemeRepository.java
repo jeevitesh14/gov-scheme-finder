@@ -19,7 +19,8 @@ public interface SchemeRepository extends JpaRepository<Scheme, Long> {
             "(:disability IS NULL OR s.disability = :disability) AND " +
             "(:bpl IS NULL OR s.bpl = :bpl) AND " +
             "(:widow IS NULL OR s.widow = :widow) AND " +
-            "(:minority IS NULL OR s.minority = :minority)")
+            "(:minority IS NULL OR s.minority = :minority) AND " +
+            "(:income IS NULL OR s.incomeLimit IS NULL OR s.incomeLimit >= :income)")
     org.springframework.data.domain.Page<Scheme> findFiltered(
             @Param("category") com.example.backend.entity.CategoryType category,
             @Param("state") String state,
@@ -29,6 +30,7 @@ public interface SchemeRepository extends JpaRepository<Scheme, Long> {
             @Param("bpl") Boolean bpl,
             @Param("widow") Boolean widow,
             @Param("minority") Boolean minority,
+            @Param("income") Double income,
             org.springframework.data.domain.Pageable pageable
     );
 }

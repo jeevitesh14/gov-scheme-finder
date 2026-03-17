@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ShieldCheck, LogIn, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
 import { authService } from "./api";
 
 function Login({ onLogin }) {
@@ -16,7 +18,7 @@ function Login({ onLogin }) {
     setLoading(true);
     try {
       const response = await authService.login(user);
-      const data = response.data; // api.js returns response.data if success is true
+      const data = response.data;
       onLogin({ email: data.email, role: data.role, token: data.token, name: data.name });
       if (data.role === "ADMIN") {
         navigate("/admin");
@@ -32,52 +34,71 @@ function Login({ onLogin }) {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="auth-card"
+      >
         <div className="auth-logo">
-          <h1>✔ Scheme Finder</h1>
-          <p>Welcome! Sign in to continue.</p>
+          <ShieldCheck size={48} className="text-primary" style={{ margin: '0 auto 1.5rem' }} />
+          <h1>GovScheme Finder</h1>
+          <p>Access government benefits with ease.</p>
         </div>
 
-        <h2>Login</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 800 }}>Welcome Back</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && (
+          <div className="auth-error">
+            <AlertCircle size={16} />
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Email</label>
-            <input
-              id="login-email"
-              className="form-input"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={user.email}
-              onChange={handleChange}
-              required
-            />
+            <label>Email Address</label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                id="login-email"
+                className="form-input"
+                style={{ paddingLeft: '2.75rem' }}
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                value={user.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input
-              id="login-password"
-              className="form-input"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              value={user.password}
-              onChange={handleChange}
-              required
-            />
+            <div style={{ position: 'relative' }}>
+              <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                id="login-password"
+                className="form-input"
+                style={{ paddingLeft: '2.75rem' }}
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={user.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
           <button className="auth-submit" type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Verifying..." : "Sign In to Dashboard"}
+            {!loading && <ArrowRight size={18} style={{ marginLeft: '0.5rem', verticalAlign: 'middle', display: 'inline' }} />}
           </button>
         </form>
 
         <p className="auth-alt">
-          Don't have an account? <Link to="/register">Register</Link>
+          New here? <Link to="/register">Create an account</Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,4 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { 
+  Send, 
+  Bot, 
+  X, 
+  MessageSquare, 
+  RotateCcw, 
+  Sparkles,
+  Search,
+  ChevronDown
+} from "lucide-react";
 import { schemeService } from "./api";
 
 const STEPS = {
@@ -39,7 +49,7 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
     if (isOpen) scrollToBottom();
   }, [messages, isOpen]);
 
-  // Restart chat if language changes to show translated welcome message (simple version)
+  // Restart chat if language changes to show translated welcome message
   useEffect(() => {
     setMessages([{ id: Date.now(), role: "bot", text: t.chatWelcome }]);
     setFlowStep(STEPS.START);
@@ -101,28 +111,29 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
         
         addBotMessage("🔄 Finding schemes based on your profile...");
         try {
-            // Normalize inputs to match Enums and logic in SchemeRepository/Dashboard
-            const normalize = (val) => {
-                if (!val || val.toLowerCase() === "all" || val.toLowerCase() === "any") return null;
-                return val.trim().toUpperCase().replace(/\s+/g, '_');
+            const validateEnum = (val, allowed) => {
+                if (!val) return null;
+                const normalized = val.trim().toUpperCase().replace(/\s+/g, '_');
+                if (allowed.includes(normalized)) return normalized;
+                if (normalized === "ALL" || normalized === "ANY") return null;
+                return null; // Ignore invalid values instead of causing 400
             };
 
             const params = { size: 5, sort: "id,desc" };
             
-            const categoryEnum = normalize(finalCategory);
+            const categoryEnum = validateEnum(finalCategory, ["EDUCATION", "HEALTH", "AGRICULTURE", "HOUSING", "FINANCE", "FOOD", "SOCIAL_WELFARE", "ENTREPRENEURSHIP", "OTHER"]);
             const stateVal = (userData.state && userData.state.toLowerCase() !== "all") ? userData.state : null;
-            const genderEnum = normalize(userData.gender);
-            const casteEnum = normalize(userData.caste);
+            const genderEnum = validateEnum(userData.gender, ["MALE", "FEMALE", "ALL"]);
+            const casteEnum = validateEnum(userData.caste, ["GENERAL", "OBC", "SC", "ST", "EWS", "ALL"]);
 
             if (categoryEnum) params.category = categoryEnum;
             if (stateVal) params.state = stateVal;
             if (genderEnum && genderEnum !== "ALL") params.gender = genderEnum;
-            console.log("Chatbot search params:", params);
-            // alert("DEBUG: Starting chatbot search for " + (params.category || "any"));
+            if (casteEnum && casteEnum !== "ALL") params.caste = casteEnum;
+            if (userData.income > 0) params.income = userData.income;
 
+            console.log("Fetching schemes with params:", params);
             const response = await schemeService.getSchemes(params);
-            
-            // Robustly handle both ApiResponse and direct Page responses
             const pageObj = response?.data || response;
             const data = pageObj?.content || [];
             const total = pageObj?.totalElements || 0;
@@ -131,13 +142,12 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
                 const names = data.slice(0, 3).map(s => `• **${s.name}**`).join("\n");
                 addBotMessage(`🎉 I found **${total}** schemes for you!\n\n${names}\n\nCheck the Dashboard for full details. Type 'reset' to start a new search!`);
             } else {
-                addBotMessage("😔 I couldn't find any specific schemes matching your exact profile. Try adjusting your filters or checking the 'All' schemes on the Dashboard! Type 'reset' to try again.");
+                addBotMessage("😔 I couldn't find any specific schemes matching your exact profile. Type 'reset' to try again.");
             }
         } catch (e) {
-            console.error("Chatbot Search Error:", e);
-            // Handle various error formats (Axios error, Rejected Promise object, etc.)
-            const errorDetails = e.response?.data?.message || e.message || (typeof e === 'object' ? (e.message || e.error || JSON.stringify(e)) : e);
-            addBotMessage(`⚠️ I had trouble fetching the results.\n\n**Error:** ${errorDetails}\n\n**Note:** If this persists, please try a **Hard Refresh (Ctrl + F5)** in your browser.`);
+            console.error("Chat fetch error:", e);
+            const errorDetails = e.response?.data?.message || e.message;
+            addBotMessage(`⚠️ I had trouble fetching results. Type 'reset' to try again.`);
         }
         break;
 
@@ -159,7 +169,7 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
     if (low.includes("farmer") || low.includes("agriculture") || low.includes("kisan"))
         return "🚜 For Agriculture, PM-Kisan is a top scheme. Type 'yes' to see if you qualify for others!";
     if (low.includes("health") || low.includes("hospital") || low.includes("medical"))
-        return "🏥 Ayushman Bharat provides up to 5 Lakh health cover. Type 'yes' to find more Health schemes!";
+        return "🏥 Ayushman Bharat provides cover. Type 'yes' to find more Health schemes!";
 
     return "📋 Type 'yes' to start a guided search for schemes you qualify for, or ask me about a category!";
   };
@@ -190,17 +200,22 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
   return (
     <div className={`chat-widget-wrapper ${isOpen ? "open" : ""}`}>
       <button className="chat-floating-btn" onClick={onToggle} title={t.chatAssistant}>
-        {isOpen ? "✕" : "🤖"}
+        {isOpen ? <X size={32} /> : <MessageSquare size={32} />}
       </button>
 
       <div className="chat-window">
         <div className="chat-window-header">
           <div className="header-info">
-            <span className="dot"></span>
-            <h3>{t.chatAssistant}</h3>
+            <div className="bot-avatar">
+              <Sparkles size={20} />
+            </div>
+            <div className="header-info-text">
+              <h3>{t.chatAssistant}</h3>
+              <span className="status">AI Online</span>
+            </div>
           </div>
           <button className="chat-close-header" onClick={onClose} title="Collapse">
-            ✕
+            <ChevronDown size={20} />
           </button>
         </div>
 
@@ -214,14 +229,16 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
         </div>
 
         <div className="chat-window-input">
-          <input
-            placeholder={flowStep === STEPS.START ? t.typeMessage : "Your answer..."}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <button onClick={handleSend} className="send-btn">
-            {t.send}
+          <div className="chat-input-container">
+            <input
+              placeholder={flowStep === STEPS.START ? t.typeMessage : "Your answer..."}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+          <button onClick={handleSend} className="send-btn" disabled={!input.trim()}>
+            <Send size={20} />
           </button>
         </div>
       </div>

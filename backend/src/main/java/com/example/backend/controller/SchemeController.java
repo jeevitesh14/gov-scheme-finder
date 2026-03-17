@@ -32,6 +32,7 @@ public class SchemeController {
             @RequestParam(required = false) Boolean bpl,
             @RequestParam(required = false) Boolean widow,
             @RequestParam(required = false) Boolean minority,
+            @RequestParam(required = false) Double income,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String[] sort) {
@@ -45,7 +46,7 @@ public class SchemeController {
 
         Pageable pageable = PageRequest.of(page, size, sortOrder);
         Page<SchemeDTO> schemes = schemeService.getFilteredSchemes(
-                category, state, gender, caste, disability, bpl, widow, minority, pageable);
+                category, state, gender, caste, disability, bpl, widow, minority, income, pageable);
         
         return ResponseEntity.ok(ApiResponse.success("Schemes retrieved successfully", schemes));
     }

@@ -1,9 +1,20 @@
 import { useState, useEffect } from "react";
 import { schemeService } from "./api";
-import { Plus, Edit2, Trash2, LayoutDashboard, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  LayoutDashboard, 
+  LogOut, 
+  ChevronLeft, 
+  ChevronRight,
+  ShieldCheck,
+  Search,
+  CheckCircle2,
+  XCircle,
+  FileText
+} from "lucide-react";
 import SchemeForm from "./SchemeForm";
-
-const SCHEMES_API = "/api/schemes";
 
 function AdminDashboard({ onLogout }) {
   const [schemes, setSchemes] = useState([]);
@@ -11,6 +22,7 @@ function AdminDashboard({ onLogout }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingScheme, setEditingScheme] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] = useState({ page: 0, size: 10, totalPages: 0 });
 
   useEffect(() => {
@@ -64,24 +76,34 @@ function AdminDashboard({ onLogout }) {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  const filteredSchemes = schemes.filter(s => 
+    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="admin-dashboard-container">
-      {/* Sidebar */}
       <aside className="admin-sidebar">
         <div className="sidebar-brand">
-          <LayoutDashboard size={24} />
-          <span>Gov Admin</span>
+          <ShieldCheck size={28} />
+          <span>GovAdmin</span>
         </div>
         <nav className="sidebar-nav">
-          <button className="nav-item active">Management</button>
+          <button className="nav-item active">
+            <LayoutDashboard size={18} />
+            <span>Schemes Management</span>
+          </button>
+          <button className="nav-item" disabled>
+            <FileText size={18} />
+            <span>Usage Stats</span>
+          </button>
         </nav>
         <button className="logout-btn" onClick={onLogout}>
-          <LogOut size={20} />
+          <LogOut size={18} />
           <span>Logout</span>
         </button>
       </aside>
 
-      {/* Main Content */}
       <main className="admin-main">
         <header className="admin-header">
           <h1>Scheme Management</h1>
@@ -93,47 +115,75 @@ function AdminDashboard({ onLogout }) {
 
         {notification && (
           <div className={`admin-notification ${notification.type}`}>
+            {notification.type === "success" ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
             {notification.msg}
           </div>
         )}
 
         <div className="admin-table-wrapper">
+          <div className="admin-card-header" style={{ padding: '1rem 1.5rem', background: '#fff', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
+             <div className="search-bar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: '#f8fafc' }}>
+               <Search size={16} color="var(--text-muted)" />
+               <input 
+                 type="text" 
+                 placeholder="Search schemes..." 
+                 value={searchTerm}
+                 onChange={(e) => setSearchTerm(e.target.value)}
+                 style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem' }}
+               />
+             </div>
+          </div>
+          
           {loading ? (
-            <div className="admin-loading">Loading schemes...</div>
+            <div className="loading">
+              <div className="spinner"></div>
+              <span>Fetching schemes...</span>
+            </div>
           ) : (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>State</th>
-                  <th>Age Limit</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {schemes.map((scheme) => (
-                  <tr key={scheme.id}>
-                    <td>
-                      <div className="scheme-name-cell">{scheme.name}</div>
-                    </td>
-                    <td><span className="badge badge-category">{scheme.category}</span></td>
-                    <td>{scheme.state === "All" ? "National" : scheme.state}</td>
-                    <td>{scheme.ageMin} - {scheme.ageMax}</td>
-                    <td>
-                      <div className="table-actions">
-                        <button className="edit-btn" onClick={() => { setEditingScheme(scheme); setIsFormOpen(true); }}>
-                          <Edit2 size={16} />
-                        </button>
-                        <button className="delete-btn" onClick={() => handleDelete(scheme.id)}>
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+            <div className="data-table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Scheme Name</th>
+                    <th>Category</th>
+                    <th>State</th>
+                    <th>Age Bracket</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredSchemes.map((scheme) => (
+                    <tr key={scheme.id}>
+                      <td>
+                        <div className="scheme-name-cell">{scheme.name}</div>
+                      </td>
+                      <td>
+                        <span className="badge badge-category">{scheme.category}</span>
+                      </td>
+                      <td>{scheme.state === "All" || !scheme.state ? "National" : scheme.state}</td>
+                      <td>{scheme.ageMin || 0} - {scheme.ageMax || '∞'} yrs</td>
+                      <td>
+                        <div className="table-actions">
+                          <button className="edit-btn" onClick={() => { setEditingScheme(scheme); setIsFormOpen(true); }} title="Edit">
+                            <Edit2 size={16} />
+                          </button>
+                          <button className="delete-btn" onClick={() => handleDelete(scheme.id)} title="Delete">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredSchemes.length === 0 && (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                        No schemes found matching your search.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -143,10 +193,10 @@ function AdminDashboard({ onLogout }) {
               disabled={pagination.page === 0} 
               onClick={() => fetchSchemes(pagination.page - 1)}
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={16} />
               Previous
             </button>
-            <span className="page-info">
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
               Page {pagination.page + 1} of {pagination.totalPages}
             </span>
             <button 
@@ -154,7 +204,7 @@ function AdminDashboard({ onLogout }) {
               onClick={() => fetchSchemes(pagination.page + 1)}
             >
               Next
-              <ChevronRight size={18} />
+              <ChevronRight size={16} />
             </button>
           </div>
         )}
