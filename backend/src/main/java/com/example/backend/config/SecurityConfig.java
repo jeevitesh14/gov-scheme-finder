@@ -1,7 +1,6 @@
 package com.example.backend.config;
 
 import com.example.backend.security.JwtFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,10 +19,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -55,7 +57,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/chatbot/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/schemes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/schemes").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/schemes", "/api/schemes/**").hasAuthority("ROLE_ADMIN")

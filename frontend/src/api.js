@@ -48,9 +48,15 @@ export const authService = {
 
 export const schemeService = {
   getSchemes: (params) => api.get("/api/schemes", { params }),
+  getEligibleSchemes: (params) => api.get("/api/schemes/eligible", { params }),
   createScheme: (data) => api.post("/api/schemes", data),
   updateScheme: (id, data) => api.put(`/api/schemes/${id}`, data),
   deleteScheme: (id) => api.delete(`/api/schemes/${id}`),
+};
+
+export const profileService = {
+  getProfile: () => api.get("/api/profile"),
+  updateProfile: (data) => api.put("/api/profile", data),
 };
 
 export const bookmarkService = {
@@ -58,5 +64,15 @@ export const bookmarkService = {
   addBookmark: (schemeId) => api.post(`/api/bookmarks/${schemeId}`),
   removeBookmark: (schemeId) => api.delete(`/api/bookmarks/${schemeId}`),
 };
+
+export const applicationService = {
+  getApplications: () => api.get("/api/applications/my-applications"),
+  applyForScheme: (schemeId) => api.post(`/api/applications/apply/${schemeId}`),
+};
+
+export const chatService = {
+  queryChatbot: (query) => api.post("/api/chatbot/query", { query }),
+};
+
 
 export default api;

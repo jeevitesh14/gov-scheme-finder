@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Save, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const CATEGORIES = [
   { label: "Agriculture", value: "AGRICULTURE" },
@@ -36,6 +37,7 @@ const STATES = [
 ];
 
 function SchemeForm({ scheme, onSave, onClose }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -81,7 +83,7 @@ function SchemeForm({ scheme, onSave, onClose }) {
     <div className="admin-modal-overlay">
       <div className="admin-modal">
         <div className="admin-modal-header">
-          <h2>{scheme ? "Edit Scheme" : "Create New Scheme"}</h2>
+          <h2>{scheme ? t('editScheme') : t('createNewScheme')}</h2>
           <button className="btn-cancel" style={{ padding: '0.5rem', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
             <X size={20} />
           </button>
@@ -91,7 +93,7 @@ function SchemeForm({ scheme, onSave, onClose }) {
           <form id="scheme-form" onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-group full-width" style={{ gridColumn: 'span 2' }}>
-                <label>Scheme Name</label>
+                <label>{t('schemeName')}</label>
                 <input 
                   className="form-control"
                   name="name" 
@@ -103,7 +105,7 @@ function SchemeForm({ scheme, onSave, onClose }) {
               </div>
 
               <div className="form-group full-width" style={{ gridColumn: 'span 2' }}>
-                <label>Detailed Description</label>
+                <label>{t('detailedDescription')}</label>
                 <textarea 
                   className="form-control"
                   name="description" 
@@ -115,50 +117,50 @@ function SchemeForm({ scheme, onSave, onClose }) {
               </div>
 
               <div className="form-group">
-                <label>Primary Category</label>
+                <label>{t('primaryCategory')}</label>
                 <select className="form-control" name="category" value={formData.category} onChange={handleChange}>
                   {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label>State Jurisdiction</label>
+                <label>{t('stateJurisdiction')}</label>
                 <select className="form-control" name="state" value={formData.state} onChange={handleChange}>
                   {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Target Gender</label>
+                <label>{t('targetGender')}</label>
                 <select className="form-control" name="gender" value={formData.gender} onChange={handleChange}>
                   {GENDERS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Caste Eligibility</label>
+                <label>{t('casteEligibility')}</label>
                 <select className="form-control" name="caste" value={formData.caste} onChange={handleChange}>
                   {CASTES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Min Age (Years)</label>
+                <label>{t('minAgeYears')}</label>
                 <input className="form-control" type="number" name="ageMin" value={formData.ageMin} onChange={handleChange} required />
               </div>
 
               <div className="form-group">
-                <label>Max Age (Years)</label>
+                <label>{t('maxAgeYears')}</label>
                 <input className="form-control" type="number" name="ageMax" value={formData.ageMax} onChange={handleChange} required />
               </div>
 
               <div className="form-group">
-                <label>Annual Income Limit (₹)</label>
+                <label>{t('annualIncomeLimit')}</label>
                 <input className="form-control" type="number" name="incomeLimit" value={formData.incomeLimit} onChange={handleChange} required />
               </div>
 
               <div className="form-group">
-                <label>Application Portal URL</label>
+                <label>{t('applicationPortalUrl')}</label>
                 <input 
                   className="form-control"
                   name="applyLink" 
@@ -172,24 +174,24 @@ function SchemeForm({ scheme, onSave, onClose }) {
 
             <div style={{ marginTop: '2rem' }}>
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'block' }}>
-                Special Provisions & Reservations
+                {t('specialProvisionsReservations')}
               </label>
               <div className="form-checkbox-group">
                 <label className="checkbox-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <input type="checkbox" name="disability" checked={formData.disability} onChange={handleChange} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Disability Benefits</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{t('disabilityBenefits')}</span>
                 </label>
                 <label className="checkbox-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <input type="checkbox" name="bpl" checked={formData.bpl} onChange={handleChange} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>BPL Holders</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{t('bplHolders')}</span>
                 </label>
                 <label className="checkbox-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <input type="checkbox" name="widow" checked={formData.widow} onChange={handleChange} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Widow Support</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{t('widowSupport')}</span>
                 </label>
                 <label className="checkbox-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <input type="checkbox" name="minority" checked={formData.minority} onChange={handleChange} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Minority Groups</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{t('minorityGroups')}</span>
                 </label>
               </div>
             </div>
@@ -198,11 +200,11 @@ function SchemeForm({ scheme, onSave, onClose }) {
 
         <div className="admin-form-footer">
           <button type="button" className="btn-cancel" onClick={onClose}>
-            Discard Changes
+            {t('discardChanges')}
           </button>
           <button type="submit" form="scheme-form" className="btn-save">
             <Save size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
-            {scheme ? "Update Scheme" : "Publish Scheme"}
+            {scheme ? t('updateScheme') : t('publishScheme')}
           </button>
         </div>
       </div>

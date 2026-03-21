@@ -1,5 +1,4 @@
 import { 
-  Bookmark, 
   ChevronRight, 
   Tractor, 
   GraduationCap, 
@@ -12,10 +11,10 @@ import {
   Compass,
   MapPin,
   Users,
-  User as UserIcon,
-  BookMarked
+  User as UserIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const CATEGORY_ICONS = {
   AGRICULTURE: Tractor,
@@ -29,15 +28,15 @@ const CATEGORY_ICONS = {
   OTHER: Compass
 };
 
-function SchemeCard({ scheme, bookmarked, onBookmark, onClick, t }) {
+function SchemeCard({ scheme, onClick }) {
+  const { t } = useTranslation();
   const Icon = CATEGORY_ICONS[scheme.category] || Compass;
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      whileHover={{ y: -5 }}
       className="scheme-card" 
       onClick={onClick}
     >
@@ -45,16 +44,6 @@ function SchemeCard({ scheme, bookmarked, onBookmark, onClick, t }) {
         <div className="card-icon-wrapper">
           <Icon size={24} />
         </div>
-        <button
-          className={`bookmark-btn ${bookmarked ? "bookmarked" : ""}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onBookmark(scheme);
-          }}
-          title={bookmarked ? "Remove Bookmark" : "Bookmark"}
-        >
-          {bookmarked ? <BookMarked size={16} /> : <Bookmark size={16} />}
-        </button>
       </div>
 
       <div className="card-content">
@@ -92,7 +81,7 @@ function SchemeCard({ scheme, bookmarked, onBookmark, onClick, t }) {
             className="apply-link"
             onClick={(e) => e.stopPropagation()}
           >
-            {t.applyNow}
+            {t('applyNow')}
             <ChevronRight size={16} />
           </a>
         )}

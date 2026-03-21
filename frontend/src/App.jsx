@@ -3,18 +3,16 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Dashboard from "./Dashboard";
 import ChatWidget from "./ChatWidget";
-import BookmarksPage from "./BookmarksPage";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
+import ApplicationsPage from "./ApplicationsPage";
+import ProfilePage from "./ProfilePage";
+import BookmarksPage from "./BookmarksPage";
 import { bookmarkService } from "./api";
-import { translations } from "./translations";
 import "./index.css";
 
 function App() {
-  const [language, setLanguage] = useState(() => localStorage.getItem("language") || "English");
-  const t = translations[language] || translations["English"];
-
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
     try {
@@ -25,8 +23,8 @@ function App() {
       return null;
     }
   });
-  const [bookmarks, setBookmarks] = useState([]);
   const [chatIsOpen, setChatIsOpen] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
   const [bookmarksLoading, setBookmarksLoading] = useState(false);
 
   const fetchBookmarks = async () => {
@@ -50,10 +48,6 @@ function App() {
     }
   }, [user]);
 
-  useEffect(() => {
-    localStorage.setItem("language", language);
-  }, [language]);
-
   const handleLogin = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -62,24 +56,8 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    setBookmarks([]);
   };
 
-  const handleBookmark = async (scheme) => {
-    const isBookmarked = bookmarks.some(b => b.id === scheme.id);
-    try {
-      if (isBookmarked) {
-        await bookmarkService.removeBookmark(scheme.id);
-        setBookmarks(prev => prev.filter(b => b.id !== scheme.id));
-      } else {
-        await bookmarkService.addBookmark(scheme.id);
-        setBookmarks(prev => [...prev, scheme]);
-      }
-    } catch (err) {
-      console.error("Bookmark operation failed:", err);
-      // alert("Failed to update bookmark. Please try again.");
-    }
-  };
 
   const ProtectedRoute = ({ children }) => {
     if (!user) {
@@ -101,9 +79,6 @@ function App() {
         <Navbar 
           user={user} 
           onLogout={handleLogout} 
-          language={language} 
-          onLanguageChange={setLanguage} 
-          t={t}
         />
         
         <Routes>
@@ -115,11 +90,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard 
-                  bookmarks={bookmarks} 
-                  onBookmark={handleBookmark} 
                   onOpenChat={() => setChatIsOpen(true)} 
-                  t={t}
                 />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedAdminRoute>
+                <AdminDashboard onLogout={handleLogout} />
+              </ProtectedAdminRoute>
+            } 
+          />
+          <Route 
+            path="/applications" 
+            element={
+              <ProtectedRoute>
+                <ApplicationsPage />
               </ProtectedRoute>
             } 
           />
@@ -129,18 +117,17 @@ function App() {
               <ProtectedRoute>
                 <BookmarksPage 
                   bookmarks={bookmarks} 
-                  onBookmark={handleBookmark} 
-                  t={t}
+                  onBookmark={fetchBookmarks} 
                 />
               </ProtectedRoute>
             } 
           />
           <Route 
-            path="/admin" 
+            path="/profile" 
             element={
-              <ProtectedAdminRoute>
-                <AdminDashboard onLogout={handleLogout} t={t} />
-              </ProtectedAdminRoute>
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
             } 
           />
         </Routes>
@@ -150,7 +137,6 @@ function App() {
             isOpen={chatIsOpen} 
             onClose={() => setChatIsOpen(false)} 
             onToggle={() => setChatIsOpen(!chatIsOpen)} 
-            t={t}
           />
         )}
       </div>

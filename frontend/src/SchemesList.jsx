@@ -1,21 +1,28 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import SchemeCard from "./SchemeCard";
+import SkeletonCard from "./SkeletonCard";
+import EmptyState from "./EmptyState";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 function SchemesList({ 
     schemes, 
     loading, 
-    bookmarks, 
-    onBookmark, 
     onSchemeClick, 
     pagination, 
-    onPageChange, 
-    t 
+    onPageChange
 }) {
+  const { t } = useTranslation();
+  
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
-        Loading schemes...
+      <div className="schemes-section">
+        <div className="schemes-header">
+          <div className="skeleton" style={{ height: '32px', width: '200px' }}></div>
+          <div className="skeleton" style={{ height: '20px', width: '150px' }}></div>
+        </div>
+        <div className="schemes-grid">
+          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       </div>
     );
   }
@@ -23,25 +30,27 @@ function SchemesList({
   return (
     <section className="schemes-section">
       <div className="schemes-header">
-        <h2>{t.allSchemes}</h2>
+        <h2>{t('allSchemes')}</h2>
         <span className="schemes-count">
           {pagination ? (
-            <>Showing {pagination.page * pagination.size + 1}-{Math.min((pagination.page + 1) * pagination.size, pagination.totalElements)} of {pagination.totalElements} {t.schemesAvailable}</>
+            <>{t('showingResults', { 
+              start: pagination.page * pagination.size + 1, 
+              end: Math.min((pagination.page + 1) * pagination.size, pagination.totalElements), 
+              total: pagination.totalElements, 
+              label: t('schemes') 
+            })}</>
           ) : (
-            <>{schemes.length} {t.schemesAvailable}</>
+            <>{schemes.length} {t('schemesAvailable')}</>
           )}
         </span>
       </div>
 
       {schemes.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📭</div>
-          <h3>No schemes found</h3>
-          <p>
-            Try adjusting your filters or visit our chat to get personalized
-            recommendations.
-          </p>
-        </div>
+        <EmptyState 
+          icon={Search}
+          title={t('noSchemesFound')}
+          description={t('emptyStateDescription')}
+        />
       ) : (
         <>
           <div className="schemes-grid">
@@ -49,10 +58,7 @@ function SchemesList({
               <SchemeCard
                 key={scheme.id}
                 scheme={scheme}
-                bookmarked={bookmarks.some(b => b.id === scheme.id)}
-                onBookmark={onBookmark}
                 onClick={() => onSchemeClick(scheme)}
-                t={t}
               />
             ))}
           </div>
@@ -64,20 +70,40 @@ function SchemesList({
                 disabled={pagination.page === 0} 
                 onClick={() => onPageChange(pagination.page - 1)}
               >
-                <ChevronLeft size={18} />
-                {t.previous || "Previous"}
+                <ChevronLeft size={18} className="chevron-left" />
+                {t('previous') || "Previous"}
               </button>
               
               <div className="page-numbers">
-                {[...Array(pagination.totalPages)].map((_, i) => (
-                  <button 
-                    key={i} 
-                    className={`page-num ${pagination.page === i ? 'active' : ''}`}
-                    onClick={() => onPageChange(i)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                {(() => {
+                  const current = pagination.page;
+                  const total = pagination.totalPages;
+                  const pages = [];
+                  
+                  if (total <= 5) {
+                    for (let i = 0; i < total; i++) pages.push(i);
+                  } else {
+                    if (current <= 2) {
+                      pages.push(0, 1, 2, 3, 4);
+                    } else if (current >= total - 3) {
+                      for (let i = total - 5; i < total; i++) pages.push(i);
+                    } else {
+                      pages.push(current - 2, current - 1, current, current + 1, current + 2);
+                    }
+                  }
+                  
+                  return pages.map(i => (
+                    <button 
+                      key={i} 
+                      className={`page-num ${pagination.page === i ? 'active' : ''}`}
+                      onClick={() => onPageChange(i)}
+                      aria-label={`Page ${i + 1}`}
+                      aria-current={pagination.page === i ? 'page' : undefined}
+                    >
+                      {i + 1}
+                    </button>
+                  ));
+                })()}
               </div>
 
               <button 
@@ -85,8 +111,8 @@ function SchemesList({
                 disabled={pagination.page === pagination.totalPages - 1} 
                 onClick={() => onPageChange(pagination.page + 1)}
               >
-                {t.next || "Next"}
-                <ChevronRight size={18} />
+                {t('next') || "Next"}
+                <ChevronRight size={18} className="chevron-right" />
               </button>
             </div>
           )}

@@ -1,41 +1,36 @@
 import { motion } from "framer-motion";
 import { Search, MessageSquare, Sparkles, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-function HeroSection({ onOpenChat, t }) {
+function HeroSection({ onOpenChat, searchQuery, onSearchChange }) {
+  const { t } = useTranslation();
   return (
     <header className="hero">
       <div className="hero-content">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hero-badge"
-        >
-          <Sparkles size={14} />
-          <span>{t.heroBadge || "Empowering Citizens with Information"}</span>
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.5 }}
         >
-          {t.heroTitle.split(" ").slice(0, -1).join(" ")} <span>{t.heroTitle.split(" ").pop()}</span>
+          {t('heroTitle', "Government Scheme Eligibility").split(" ").slice(0, -1).join(" ")} <span>{t('heroTitle', "Finder").split(" ").pop()}</span>
         </motion.h1>
 
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="hero-badge"
+          style={{ marginBottom: '2.5rem' }}
         >
-          {t.heroSub || "Find and apply for government schemes tailored to your profile. Simplified, accessible, and transparent for every citizen."}
-        </motion.p>
+          <Sparkles size={14} />
+          <span>{t('heroSub', "Empowering Citizens with Information")}</span>
+        </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="hero-buttons"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="hero-actions"
         >
           <button 
             className="btn-hero btn-hero-primary" 
@@ -43,14 +38,20 @@ function HeroSection({ onOpenChat, t }) {
               document.getElementById("schemes-section")?.scrollIntoView({ behavior: "smooth" });
             }}
           >
-            <Search size={18} />
-            {t.browseSchemes || t.findSchemes}
+            {t('browseSchemes', "View Schemes")}
             <ArrowRight size={16} />
           </button>
-          <button className="btn-hero btn-hero-outline" onClick={onOpenChat}>
-            <MessageSquare size={18} />
-            {t.askChatbot}
-          </button>
+
+          <div className="hero-search-wrapper">
+            <Search size={18} className="search-icon" />
+            <input 
+              type="text" 
+              placeholder={t('searchPlaceholder', "Search schemes...")}
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="hero-search-input"
+            />
+          </div>
         </motion.div>
       </div>
     </header>

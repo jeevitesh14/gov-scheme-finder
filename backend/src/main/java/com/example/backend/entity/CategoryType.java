@@ -8,6 +8,9 @@ public enum CategoryType {
     FINANCE,
     FOOD,
     SOCIAL_WELFARE,
+    WOMEN_CHILD_WELFARE,
+    EMPLOYMENT,
+    SKILL_DEVELOPMENT,
     ENTREPRENEURSHIP,
     OTHER
 }

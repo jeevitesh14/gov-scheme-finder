@@ -15,12 +15,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserBookmarkService {
 
     private final UserBookmarkRepository bookmarkRepository;
     private final UserRepository userRepository;
     private final SchemeRepository schemeRepository;
+
+    public UserBookmarkService(UserBookmarkRepository bookmarkRepository, UserRepository userRepository, SchemeRepository schemeRepository) {
+        this.bookmarkRepository = bookmarkRepository;
+        this.userRepository = userRepository;
+        this.schemeRepository = schemeRepository;
+    }
 
     @Transactional
     public void addBookmark(String email, Long schemeId) {
@@ -30,10 +35,7 @@ public class UserBookmarkService {
                 .orElseThrow(() -> new RuntimeException("Scheme not found"));
 
         if (bookmarkRepository.findByUserAndScheme(user, scheme).isEmpty()) {
-            UserBookmark bookmark = UserBookmark.builder()
-                    .user(user)
-                    .scheme(scheme)
-                    .build();
+            UserBookmark bookmark = new UserBookmark(null, user, scheme);
             bookmarkRepository.save(bookmark);
         }
     }
@@ -58,22 +60,23 @@ public class UserBookmarkService {
     }
 
     private SchemeDTO convertToDTO(Scheme scheme) {
-        return SchemeDTO.builder()
-                .id(scheme.getId())
-                .name(scheme.getName())
-                .description(scheme.getDescription())
-                .category(scheme.getCategory())
-                .state(scheme.getState())
-                .gender(scheme.getGender())
-                .caste(scheme.getCaste())
-                .ageMin(scheme.getAgeMin())
-                .ageMax(scheme.getAgeMax())
-                .incomeLimit(scheme.getIncomeLimit())
-                .disability(scheme.getDisability())
-                .bpl(scheme.getBpl())
-                .widow(scheme.getWidow())
-                .minority(scheme.getMinority())
-                .applyLink(scheme.getApplyLink())
-                .build();
+        return new SchemeDTO(
+                scheme.getId(),
+                scheme.getName(),
+                scheme.getDescription(),
+                scheme.getCategory(),
+                scheme.getState(),
+                scheme.getGender(),
+                scheme.getCaste(),
+                scheme.getAgeMin(),
+                scheme.getAgeMax(),
+                scheme.getIncomeLimit(),
+                scheme.getDisability(),
+                scheme.getBpl(),
+                scheme.getWidow(),
+                scheme.getMinority(),
+                scheme.getApplyLink()
+        );
     }
 }
+

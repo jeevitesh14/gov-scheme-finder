@@ -9,7 +9,8 @@ import {
   Search,
   ChevronDown
 } from "lucide-react";
-import { schemeService } from "./api";
+import { chatService } from "./api";
+import { useTranslation } from "react-i18next";
 
 const STEPS = {
   START: "START",
@@ -21,12 +22,13 @@ const STEPS = {
   COMPLETED: "COMPLETED",
 };
 
-function ChatWidget({ isOpen, onClose, onToggle, t }) {
+function ChatWidget({ isOpen, onClose, onToggle }) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState([
     {
       id: 1,
       role: "bot",
-      text: t.chatWelcome,
+      text: t('chatWelcome'),
     },
   ]);
   const [input, setInput] = useState("");
@@ -51,9 +53,9 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
 
   // Restart chat if language changes to show translated welcome message
   useEffect(() => {
-    setMessages([{ id: Date.now(), role: "bot", text: t.chatWelcome }]);
+    setMessages([{ id: Date.now(), role: "bot", text: t('chatWelcome') }]);
     setFlowStep(STEPS.START);
-  }, [t.chatWelcome]);
+  }, [t]);
 
   const addBotMessage = (text) => {
     setMessages((prev) => [...prev, { id: Date.now(), role: "bot", text }]);
@@ -182,13 +184,32 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
     setMessages(prev => [...prev, userMsg]);
     setInput("");
 
+    // Check if we are in a guided flow
     const wasGuided = await handleGuidedSearch(trimmed);
     
     if (!wasGuided) {
-        const botResponse = getKeywordResponse(trimmed);
-        addBotMessage(botResponse);
+        // AI logic for keyword search
+        addBotMessage("🔍 Searching for information about that...");
+        
+        try {
+            const response = await chatService.queryChatbot(trimmed);
+            const schemes = response?.data || [];
+            
+            if (schemes.length > 0) {
+                const names = schemes.map(s => `• **${s.name}**: ${s.description.substring(0, 100)}...`).join("\n\n");
+                addBotMessage(`I found these schemes that might match your query:\n\n${names}\n\nCheck the Dashboard for more details or type 'yes' for a personalized check!`);
+            } else {
+                const keywordResponse = getKeywordResponse(trimmed);
+                addBotMessage(keywordResponse);
+            }
+        } catch (error) {
+            console.error("Chat search error:", error);
+            const botResponse = getKeywordResponse(trimmed);
+            addBotMessage(botResponse);
+        }
     }
   };
+
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -199,7 +220,7 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
 
   return (
     <div className={`chat-widget-wrapper ${isOpen ? "open" : ""}`}>
-      <button className="chat-floating-btn" onClick={onToggle} title={t.chatAssistant}>
+      <button className="chat-floating-btn" onClick={onToggle} title={t('chatAssistant')}>
         {isOpen ? <X size={32} /> : <MessageSquare size={32} />}
       </button>
 
@@ -210,7 +231,7 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
               <Sparkles size={20} />
             </div>
             <div className="header-info-text">
-              <h3>{t.chatAssistant}</h3>
+              <h3>{t('chatAssistant')}</h3>
               <span className="status">AI Online</span>
             </div>
           </div>
@@ -221,17 +242,48 @@ function ChatWidget({ isOpen, onClose, onToggle, t }) {
 
         <div className="chat-window-messages">
           {messages.map(m => (
-            <div key={m.id} className={`chat-bubble ${m.role}`} style={{ whiteSpace: "pre-wrap" }}>
-              {m.text}
+            <div key={m.id} className={`chat-bubble-container ${m.role}`}>
+              {m.role === "bot" && (
+                <div className="bubble-avatar">
+                  <Bot size={14} />
+                </div>
+              )}
+              <div className={`chat-bubble ${m.role}`} style={{ whiteSpace: "pre-wrap" }}>
+                {m.text}
+              </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
 
+        {flowStep === STEPS.START && (
+          <div className="chat-suggestions" style={{ display: 'flex', gap: '0.5rem', padding: '0.5rem 1rem', overflowX: 'auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            {["Education", "Farmers", "Health"].map(cat => (
+              <button 
+                key={cat}
+                onClick={() => setInput(cat)}
+                style={{
+                  padding: '0.3rem 0.8rem',
+                  borderRadius: '15px',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'white',
+                  fontSize: '0.8rem',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+
+
         <div className="chat-window-input">
           <div className="chat-input-container">
             <input
-              placeholder={flowStep === STEPS.START ? t.typeMessage : "Your answer..."}
+              placeholder={flowStep === STEPS.START ? t('typeMessage') : "Your answer..."}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}

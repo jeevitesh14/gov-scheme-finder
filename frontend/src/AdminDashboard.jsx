@@ -15,8 +15,10 @@ import {
   FileText
 } from "lucide-react";
 import SchemeForm from "./SchemeForm";
+import { useTranslation } from "react-i18next";
 
 function AdminDashboard({ onLogout }) {
+  const { t } = useTranslation();
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -91,25 +93,25 @@ function AdminDashboard({ onLogout }) {
         <nav className="sidebar-nav">
           <button className="nav-item active">
             <LayoutDashboard size={18} />
-            <span>Schemes Management</span>
+            <span>{t('schemesManagement')}</span>
           </button>
           <button className="nav-item" disabled>
             <FileText size={18} />
-            <span>Usage Stats</span>
+            <span>{t('usageStats')}</span>
           </button>
         </nav>
         <button className="logout-btn" onClick={onLogout}>
           <LogOut size={18} />
-          <span>Logout</span>
+          <span>{t('logout')}</span>
         </button>
       </aside>
 
       <main className="admin-main">
         <header className="admin-header">
-          <h1>Scheme Management</h1>
+          <h1>{t('schemeManagement')}</h1>
           <button className="add-btn" onClick={() => { setEditingScheme(null); setIsFormOpen(true); }}>
             <Plus size={20} />
-            <span>Add New Scheme</span>
+            <span>{t('addNewScheme')}</span>
           </button>
         </header>
 
@@ -126,7 +128,7 @@ function AdminDashboard({ onLogout }) {
                <Search size={16} color="var(--text-muted)" />
                <input 
                  type="text" 
-                 placeholder="Search schemes..." 
+                 placeholder={t('searchSchemes')} 
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
                  style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem' }}
@@ -144,11 +146,11 @@ function AdminDashboard({ onLogout }) {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Scheme Name</th>
-                    <th>Category</th>
-                    <th>State</th>
-                    <th>Age Bracket</th>
-                    <th>Actions</th>
+                    <th>{t('schemeName')}</th>
+                    <th>{t('category')}</th>
+                    <th>{t('state')}</th>
+                    <th>{t('ageBracket')}</th>
+                    <th>{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -160,7 +162,7 @@ function AdminDashboard({ onLogout }) {
                       <td>
                         <span className="badge badge-category">{scheme.category}</span>
                       </td>
-                      <td>{scheme.state === "All" || !scheme.state ? "National" : scheme.state}</td>
+                      <td>{scheme.state === "All" || !scheme.state ? t('national') : scheme.state}</td>
                       <td>{scheme.ageMin || 0} - {scheme.ageMax || '∞'} yrs</td>
                       <td>
                         <div className="table-actions">
@@ -194,16 +196,16 @@ function AdminDashboard({ onLogout }) {
               onClick={() => fetchSchemes(pagination.page - 1)}
             >
               <ChevronLeft size={16} />
-              Previous
+              {t('previous')}
             </button>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              Page {pagination.page + 1} of {pagination.totalPages}
+              {t('pageOf', { current: pagination.page + 1, total: pagination.totalPages })}
             </span>
             <button 
               disabled={pagination.page === pagination.totalPages - 1} 
               onClick={() => fetchSchemes(pagination.page + 1)}
             >
-              Next
+              {t('next')}
               <ChevronRight size={16} />
             </button>
           </div>

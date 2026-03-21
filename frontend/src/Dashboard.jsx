@@ -10,22 +10,28 @@ import {
   User,
   Users,
   Calendar,
-  IndianRupee,
+  Search,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  IndianRupee
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 import HeroSection from "./HeroSection";
 import FilterPanel from "./FilterPanel";
 import SchemesList from "./SchemesList";
-import { schemeService } from "./api";
+import SchemeCard from "./SchemeCard";
+import { schemeService, applicationService } from "./api";
 
 const DEFAULT_FILTERS = {
   category: "", state: "", gender: "ALL", caste: "ALL",
   age: "All", income: "All",
   disability: false, bpl: false, widow: false, minority: false,
+  search: "",
 };
 
-function SchemeModal({ scheme, onClose, t }) {
+function SchemeModal({ scheme, onClose, onApply }) {
+  const { t } = useTranslation();
   if (!scheme) return null;
 
   return (
@@ -54,7 +60,7 @@ function SchemeModal({ scheme, onClose, t }) {
             <section className="modal-section">
               <h3>
                 <Info size={16} />
-                About this Scheme
+                {t('aboutScheme')}
               </h3>
               <p>{scheme.description}</p>
             </section>
@@ -62,25 +68,25 @@ function SchemeModal({ scheme, onClose, t }) {
             <section className="modal-section">
               <h3>
                 <FileText size={16} />
-                Eligibility & Details
+                {t('eligibilityDetails')}
               </h3>
               <div className="detail-grid">
                 <div className="detail-item">
-                  <span className="detail-label">State Jurisdiction</span>
+                  <span className="detail-label">{t('stateJurisdiction')}</span>
                   <span className="detail-value">
                     <MapPin size={14} className="text-primary" />
                     {scheme.state}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Target Gender</span>
+                  <span className="detail-label">{t('targetGender')}</span>
                   <span className="detail-value">
                     <User size={14} className="text-primary" />
                     {scheme.gender}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Caste Category</span>
+                  <span className="detail-label">{t('casteCategory')}</span>
                   <span className="detail-value">
                     <Users size={14} className="text-primary" />
                     {scheme.caste}
@@ -88,19 +94,19 @@ function SchemeModal({ scheme, onClose, t }) {
                 </div>
                 {(scheme.ageMin !== null || scheme.ageMax !== null) && (
                   <div className="detail-item">
-                    <span className="detail-label">Age Range</span>
+                    <span className="detail-label">{t('ageRange')}</span>
                     <span className="detail-value">
                       <Calendar size={14} className="text-primary" />
-                      {scheme.ageMin || 0} - {scheme.ageMax || '∞'} Years
+                      {scheme.ageMin || 0} - {scheme.ageMax || '∞'} {t('years')}
                     </span>
                   </div>
                 )}
                 {scheme.incomeLimit !== null && (
                   <div className="detail-item">
-                    <span className="detail-label">Income Threshold</span>
+                    <span className="detail-label">{t('incomeThreshold')}</span>
                     <span className="detail-value">
                       <IndianRupee size={14} className="text-primary" />
-                      Up to ₹{scheme.incomeLimit.toLocaleString()}
+                      {t('upTo')} ₹{scheme.incomeLimit.toLocaleString()}
                     </span>
                   </div>
                 )}
@@ -110,24 +116,32 @@ function SchemeModal({ scheme, onClose, t }) {
             <section className="modal-section">
               <h3>
                 <AlertTriangle size={16} />
-                Special Provisions
+                {t('specialProvisions')}
               </h3>
               <div className="card-badges">
-                {scheme.bpl && <span className="badge badge-special">{t.bpl}</span>}
-                {scheme.disability && <span className="badge badge-special">{t.disability}</span>}
-                {scheme.widow && <span className="badge badge-special">{t.widow}</span>}
-                {scheme.minority && <span className="badge badge-special">{t.minority}</span>}
+                {scheme.bpl && <span className="badge badge-special">{t('bpl')}</span>}
+                {scheme.disability && <span className="badge badge-special">{t('disability')}</span>}
+                {scheme.widow && <span className="badge badge-special">{t('widow')}</span>}
+                {scheme.minority && <span className="badge badge-special">{t('minority')}</span>}
                 {!scheme.bpl && !scheme.disability && !scheme.widow && !scheme.minority && (
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>None specified</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('noneSpecified')}</span>
                 )}
               </div>
             </section>
           </div>
 
-          <div className="modal-footer">
+          <div className="modal-footer" style={{ gap: '1rem' }}>
+            <button 
+              className="btn-hero btn-hero-primary" 
+              style={{ flex: 1, justifyContent: 'center' }}
+              onClick={() => onApply(scheme)}
+            >
+              {t('applyNow')}
+              <CheckCircle2 size={18} />
+            </button>
             {scheme.applyLink && (
-              <a href={scheme.applyLink} target="_blank" rel="noreferrer" className="btn-hero btn-hero-primary" style={{ textDecoration: 'none', justifyContent: 'center' }}>
-                Apply on Official Portal
+              <a href={scheme.applyLink} target="_blank" rel="noreferrer" className="btn-hero btn-hero-outline" style={{ flex: 1, textDecoration: 'none', justifyContent: 'center' }}>
+                Official Portal
                 <ExternalLink size={18} />
               </a>
             )}
@@ -138,13 +152,29 @@ function SchemeModal({ scheme, onClose, t }) {
   );
 }
 
-function Dashboard({ bookmarks, onBookmark, onOpenChat, t }) {
+function Dashboard({ bookmarks, onBookmark, onOpenChat }) {
+  const { t } = useTranslation();
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [selectedScheme, setSelectedScheme] = useState(null);
   const [pagination, setPagination] = useState({ page: 0, size: 9, totalElements: 0, totalPages: 0 });
+  const [eligibleSchemes, setEligibleSchemes] = useState([]);
+  const [eligibleLoading, setEligibleLoading] = useState(false);
+
+  const fetchEligibleSchemes = async () => {
+    setEligibleLoading(true);
+    try {
+      const response = await schemeService.getEligibleSchemes({ size: 4 });
+      setEligibleSchemes(response.data.content);
+    } catch (err) {
+      console.error("Failed to fetch eligible schemes:", err);
+    } finally {
+      setEligibleLoading(false);
+    }
+  };
 
   const fetchSchemes = useCallback(async (f, pageNum = 0) => {
     setLoading(true);
@@ -155,6 +185,7 @@ function Dashboard({ bookmarks, onBookmark, onOpenChat, t }) {
         size: pagination.size,
         sort: "id,desc"
       };
+      if (f.search) params.keyword = f.search;
       if (f.category) params.category = f.category;
       if (f.state) params.state = f.state;
       if (f.gender && f.gender !== "ALL") params.gender = f.gender;
@@ -163,6 +194,7 @@ function Dashboard({ bookmarks, onBookmark, onOpenChat, t }) {
       if (f.bpl) params.bpl = true;
       if (f.widow) params.widow = true;
       if (f.minority) params.minority = true;
+
 
       const response = await schemeService.getSchemes(params);
       const pageData = response.data;
@@ -184,7 +216,20 @@ function Dashboard({ bookmarks, onBookmark, onOpenChat, t }) {
 
   useEffect(() => { 
     fetchSchemes(filters, 0); 
+    fetchEligibleSchemes();
   }, [filters, fetchSchemes]);
+
+  const handleApply = async (scheme) => {
+    try {
+      await applicationService.applyForScheme(scheme.id);
+      setSuccess(`Successfully applied for ${scheme.name}!`);
+      setSelectedScheme(null);
+      setTimeout(() => setSuccess(null), 5000);
+    } catch (err) {
+      setError(err.message || "Failed to submit application.");
+      setTimeout(() => setError(null), 5000);
+    }
+  };
 
   const handlePageChange = (newPage) => {
     fetchSchemes(filters, newPage);
@@ -201,35 +246,72 @@ function Dashboard({ bookmarks, onBookmark, onOpenChat, t }) {
 
   return (
     <div style={{ background: '#f8fafc' }}>
-      <HeroSection onOpenChat={onOpenChat} t={t} />
+      <HeroSection 
+        onOpenChat={onOpenChat} 
+        searchQuery={filters.search}
+        onSearchChange={(val) => handleFilterChange('search', val)}
+      />
+      
+
+      <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 2rem' }}>
+        {eligibleSchemes.length > 0 && (
+          <section className="eligible-section">
+            <div className="eligible-header">
+              <ShieldCheck size={24} />
+              <h2>{t('recommendedForYou')}</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {eligibleSchemes.map(scheme => (
+                <div key={scheme.id} className="relative">
+                  <SchemeCard 
+                    scheme={{...scheme, isEligible: true}} 
+                    onClick={() => setSelectedScheme(scheme)}
+                  />
+                  <div className="eligible-badge">
+                    <CheckCircle2 size={10} />
+                    {t('youAreEligible')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
       <div className="main-layout" id="schemes-section">
         <FilterPanel
           filters={filters}
           onChange={handleFilterChange}
           onReset={handleReset}
-          t={t}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-            {error && <div className="auth-error" style={{ margin: "0 0 1rem 0" }}>{error}</div>}
+            {error && (
+              <motion.div initial={{opacity:0}} animate={{opacity:1}} className="auth-error" style={{ margin: "0 0 1rem 0" }}>
+                {error}
+              </motion.div>
+            )}
+            {success && (
+              <motion.div initial={{opacity:0}} animate={{opacity:1}} className="auth-success" style={{ margin: "0 0 1rem 0", background: '#10b98120', color: '#10b981', padding: '1rem', borderRadius: '8px', border: '1px solid #10b98140' }}>
+                {success}
+              </motion.div>
+            )}
             <SchemesList
               schemes={schemes}
               loading={loading}
-              bookmarks={bookmarks}
-              onBookmark={onBookmark}
               onSchemeClick={(scheme) => setSelectedScheme(scheme)}
               pagination={pagination}
               onPageChange={handlePageChange}
-              t={t}
             />
         </div>
       </div>
       <SchemeModal 
         scheme={selectedScheme} 
         onClose={() => setSelectedScheme(null)} 
-        t={t} 
+        onApply={handleApply}
       />
     </div>
   );
 }
 
 export default Dashboard;
+

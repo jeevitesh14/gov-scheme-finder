@@ -12,11 +12,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookmarks")
-@RequiredArgsConstructor
 @CrossOrigin
 public class BookmarkController {
 
     private final UserBookmarkService bookmarkService;
+
+    public BookmarkController(UserBookmarkService bookmarkService) {
+        this.bookmarkService = bookmarkService;
+    }
 
     @PostMapping("/{schemeId}")
     public ResponseEntity<ApiResponse<String>> addBookmark(

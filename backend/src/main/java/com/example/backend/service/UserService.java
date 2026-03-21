@@ -4,19 +4,23 @@ import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.security.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+    }
 
     public ApiResponse<UserDTO> register(User user) {
         String email = user.getEmail() == null ? null : user.getEmail().trim().toLowerCase();
@@ -55,12 +59,12 @@ public class UserService {
             User u = userOpt.get();
             if (passwordEncoder.matches(rawPassword, u.getPassword())) {
                 String token = jwtUtil.generateToken(u.getEmail(), u.getRole().name());
-                LoginResponse loginResponse = LoginResponse.builder()
-                        .token(token)
-                        .role(u.getRole().name())
-                        .email(u.getEmail())
-                        .name(u.getName())
-                        .build();
+                LoginResponse loginResponse = new LoginResponse(
+                        token,
+                        u.getRole().name(),
+                        u.getEmail(),
+                        u.getName()
+                );
                 return ApiResponse.success("Login successful", loginResponse);
             } else {
                 return ApiResponse.error("Invalid password");
@@ -70,11 +74,12 @@ public class UserService {
     }
 
     public UserDTO convertToDTO(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 }
+

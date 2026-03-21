@@ -6,24 +6,28 @@ import com.example.backend.entity.CasteType;
 import com.example.backend.entity.CategoryType;
 import com.example.backend.entity.GenderType;
 import com.example.backend.service.SchemeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/schemes")
-@RequiredArgsConstructor
 @CrossOrigin
 public class SchemeController {
 
     private final SchemeService schemeService;
 
+    public SchemeController(SchemeService schemeService) {
+        this.schemeService = schemeService;
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<SchemeDTO>>> getSchemes(
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) CategoryType category,
             @RequestParam(required = false) String state,
             @RequestParam(required = false) GenderType gender,
@@ -33,6 +37,7 @@ public class SchemeController {
             @RequestParam(required = false) Boolean widow,
             @RequestParam(required = false) Boolean minority,
             @RequestParam(required = false) Double income,
+            @RequestParam(required = false) Integer age,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String[] sort) {
@@ -46,9 +51,20 @@ public class SchemeController {
 
         Pageable pageable = PageRequest.of(page, size, sortOrder);
         Page<SchemeDTO> schemes = schemeService.getFilteredSchemes(
-                category, state, gender, caste, disability, bpl, widow, minority, income, pageable);
-        
+                keyword, category, state, gender, caste, disability, bpl, widow, minority, income, age, pageable);
+
         return ResponseEntity.ok(ApiResponse.success("Schemes retrieved successfully", schemes));
+    }
+
+    @GetMapping("/eligible")
+    public ResponseEntity<ApiResponse<Page<SchemeDTO>>> getEligibleSchemes(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        String email = authentication.getName();
+        return ResponseEntity.ok(ApiResponse.success("Eligible schemes retrieved successfully", schemeService.getEligibleSchemes(email, pageable)));
     }
 
     @PostMapping

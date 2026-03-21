@@ -3,8 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShieldCheck, UserPlus, Mail, Lock, User, AlertCircle, ArrowRight } from "lucide-react";
 import { authService } from "./api";
+import { useTranslation } from "react-i18next";
 
 function Register() {
+  const { t } = useTranslation();
   const [user, setUser] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,11 +37,11 @@ function Register() {
       >
         <div className="auth-logo">
           <ShieldCheck size={48} className="text-primary" style={{ margin: '0 auto 1.5rem' }} />
-          <h1>Join GovScheme</h1>
-          <p>Create your profile to discover eligible benefits.</p>
+          <h1>{t('joinGovScheme')}</h1>
+          <p>{t('discoverBenefits')}</p>
         </div>
 
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 800 }}>Create Account</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 800 }}>{t('createAccount')}</h2>
 
         {error && (
           <div className="auth-error">
@@ -50,7 +52,7 @@ function Register() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Full Legal Name</label>
+            <label>{t('fullName')}</label>
             <div style={{ position: 'relative' }}>
               <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
@@ -66,7 +68,7 @@ function Register() {
             </div>
           </div>
           <div className="form-group">
-            <label>Email Address</label>
+            <label>{t('emailAddress')}</label>
             <div style={{ position: 'relative' }}>
               <Mail size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
@@ -83,7 +85,7 @@ function Register() {
             </div>
           </div>
           <div className="form-group">
-            <label>Password</label>
+            <label>{t('password')}</label>
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
@@ -100,13 +102,13 @@ function Register() {
             </div>
           </div>
           <button className="auth-submit" type="submit" disabled={loading}>
-            {loading ? "Creating Profile..." : "Register Now"}
+            {loading ? t('creatingProfile') : t('registerNow')}
             {!loading && <UserPlus size={18} style={{ marginLeft: '0.5rem', verticalAlign: 'middle', display: 'inline' }} />}
           </button>
         </form>
 
         <p className="auth-alt">
-          Already have an account? <Link to="/login">Sign in here</Link>
+          {t('alreadyHaveAccount')}? <Link to="/login">{t('signIn')}</Link>
         </p>
       </motion.div>
     </div>

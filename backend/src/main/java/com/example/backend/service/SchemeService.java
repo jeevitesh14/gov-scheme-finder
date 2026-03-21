@@ -1,29 +1,57 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.SchemeDTO;
-import com.example.backend.entity.CasteType;
-import com.example.backend.entity.CategoryType;
-import com.example.backend.entity.GenderType;
-import com.example.backend.entity.Scheme;
+import com.example.backend.entity.*;
 import com.example.backend.repository.SchemeRepository;
-import lombok.RequiredArgsConstructor;
+import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.UserProfileRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class SchemeService {
 
     private final SchemeRepository schemeRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final UserRepository userRepository;
+
+    public SchemeService(SchemeRepository schemeRepository, UserProfileRepository userProfileRepository, UserRepository userRepository) {
+        this.schemeRepository = schemeRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.userRepository = userRepository;
+    }
 
     public Page<SchemeDTO> getFilteredSchemes(
-            CategoryType category, String state, GenderType gender, CasteType caste,
+            String keyword, CategoryType category, String state, GenderType gender, CasteType caste,
             Boolean disability, Boolean bpl, Boolean widow, Boolean minority,
-            Double income, Pageable pageable) {
+            Double income, Integer age, Pageable pageable) {
         
-        return schemeRepository.findFiltered(category, state, gender, caste, disability, bpl, widow, minority, income, pageable)
+        return schemeRepository.findFiltered(keyword, category, state, gender, caste, disability, bpl, widow, minority, income, age, pageable)
                 .map(this::convertToDTO);
+    }
+
+    public Page<SchemeDTO> getEligibleSchemes(String email, Pageable pageable) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        UserProfile profile = userProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Profile not found. Please complete your profile first."));
+
+        return schemeRepository.findFiltered(
+                null, // keyword
+                null, // category
+                profile.getState(),
+                profile.getGender(),
+                profile.getCaste(),
+                null, // disability (can be added to profile later if needed)
+                null, // bpl
+                null, // widow
+                null, // minority
+                profile.getIncome(),
+                profile.getAge(),
+                pageable
+        ).map(this::convertToDTO);
     }
 
     public SchemeDTO createScheme(SchemeDTO schemeDTO) {
@@ -58,41 +86,41 @@ public class SchemeService {
     }
 
     private SchemeDTO convertToDTO(Scheme scheme) {
-        return SchemeDTO.builder()
-                .id(scheme.getId())
-                .name(scheme.getName())
-                .description(scheme.getDescription())
-                .category(scheme.getCategory())
-                .state(scheme.getState())
-                .gender(scheme.getGender())
-                .caste(scheme.getCaste())
-                .ageMin(scheme.getAgeMin())
-                .ageMax(scheme.getAgeMax())
-                .incomeLimit(scheme.getIncomeLimit())
-                .disability(scheme.getDisability())
-                .bpl(scheme.getBpl())
-                .widow(scheme.getWidow())
-                .minority(scheme.getMinority())
-                .applyLink(scheme.getApplyLink())
-                .build();
+        return new SchemeDTO(
+                scheme.getId(),
+                scheme.getName(),
+                scheme.getDescription(),
+                scheme.getCategory(),
+                scheme.getState(),
+                scheme.getGender(),
+                scheme.getCaste(),
+                scheme.getAgeMin(),
+                scheme.getAgeMax(),
+                scheme.getIncomeLimit(),
+                scheme.getDisability(),
+                scheme.getBpl(),
+                scheme.getWidow(),
+                scheme.getMinority(),
+                scheme.getApplyLink()
+        );
     }
 
     private Scheme convertToEntity(SchemeDTO dto) {
-        return Scheme.builder()
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .category(dto.getCategory())
-                .state(dto.getState())
-                .gender(dto.getGender())
-                .caste(dto.getCaste())
-                .ageMin(dto.getAgeMin())
-                .ageMax(dto.getAgeMax())
-                .incomeLimit(dto.getIncomeLimit())
-                .disability(dto.getDisability())
-                .bpl(dto.getBpl())
-                .widow(dto.getWidow())
-                .minority(dto.getMinority())
-                .applyLink(dto.getApplyLink())
-                .build();
+        Scheme scheme = new Scheme();
+        scheme.setName(dto.getName());
+        scheme.setDescription(dto.getDescription());
+        scheme.setCategory(dto.getCategory());
+        scheme.setState(dto.getState());
+        scheme.setGender(dto.getGender());
+        scheme.setCaste(dto.getCaste());
+        scheme.setAgeMin(dto.getAgeMin());
+        scheme.setAgeMax(dto.getAgeMax());
+        scheme.setIncomeLimit(dto.getIncomeLimit());
+        scheme.setDisability(dto.getDisability());
+        scheme.setBpl(dto.getBpl());
+        scheme.setWidow(dto.getWidow());
+        scheme.setMinority(dto.getMinority());
+        scheme.setApplyLink(dto.getApplyLink());
+        return scheme;
     }
 }
