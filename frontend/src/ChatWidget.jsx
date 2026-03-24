@@ -9,7 +9,7 @@ import {
   Search,
   ChevronDown
 } from "lucide-react";
-import { chatService } from "./api";
+import { chatService, schemeService } from "./api";
 import { useTranslation } from "react-i18next";
 
 const STEPS = {

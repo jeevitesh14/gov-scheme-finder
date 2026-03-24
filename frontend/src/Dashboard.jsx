@@ -245,7 +245,7 @@ function Dashboard({ bookmarks, onBookmark, onOpenChat }) {
   };
 
   return (
-    <div style={{ background: '#f8fafc' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', transition: 'var(--transition)' }}>
       <HeroSection 
         onOpenChat={onOpenChat} 
         searchQuery={filters.search}
@@ -291,7 +291,7 @@ function Dashboard({ bookmarks, onBookmark, onOpenChat }) {
               </motion.div>
             )}
             {success && (
-              <motion.div initial={{opacity:0}} animate={{opacity:1}} className="auth-success" style={{ margin: "0 0 1rem 0", background: '#10b98120', color: '#10b981', padding: '1rem', borderRadius: '8px', border: '1px solid #10b98140' }}>
+              <motion.div initial={{opacity:0}} animate={{opacity:1}} className="auth-success" style={{ margin: "0 0 1rem 0" }}>
                 {success}
               </motion.div>
             )}
