@@ -257,21 +257,12 @@ function ChatWidget({ isOpen, onClose, onToggle }) {
         </div>
 
         {flowStep === STEPS.START && (
-          <div className="chat-suggestions" style={{ display: 'flex', gap: '0.5rem', padding: '0.5rem 1rem', overflowX: 'auto', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="chat-suggestions">
             {["Education", "Farmers", "Health"].map(cat => (
               <button 
                 key={cat}
                 onClick={() => setInput(cat)}
-                style={{
-                  padding: '0.3rem 0.8rem',
-                  borderRadius: '15px',
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'white',
-                  fontSize: '0.8rem',
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer'
-                }}
+                className="suggestion-btn"
               >
                 {cat}
               </button>

@@ -15,6 +15,7 @@ import {
   FileText // Added FileText import as suggested by the instruction's snippet
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import ThemeToggle from "./ThemeToggle";
 
 const LANGUAGES = [
   { code: "en", label: "English", native: "English" },
@@ -92,6 +93,7 @@ function Navbar({ user, onLogout }) {
       </ul>
 
       <div className="navbar-right">
+        <ThemeToggle />
         {/* Custom Language Dropdown */}
         <div className="lang-dropdown-container" ref={dropdownRef}>
           <button 
